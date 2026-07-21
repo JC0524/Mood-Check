@@ -1,1 +1,586 @@
+<!DOCTYPE html>
+<html lang="zh-HK" class="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>常留意身體警告 — 身體掃描與警告訊號檢測</title>
+  
+  <!-- Inter & JetBrains Mono Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
 
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          },
+          colors: {
+            ink: '#1e1e1e',
+            cream: '#fffcf5',
+            'tint-red': '#fef2f2',
+            'accent-red': '#ef4444'
+          },
+          boxShadow: {
+            'brutal': '4px 4px 0px #1e1e1e',
+            'brutal-sm': '2px 2px 0px #1e1e1e',
+            'brutal-active': '1px 1px 0px #1e1e1e'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Neo-Brutalist Utility Styles */
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background-color: #faf8f5;
+      color: #1e1e1e;
+    }
+
+    .brutal-card {
+      background-color: #ffffff;
+      border: 2.5px solid #1e1e1e;
+      border-radius: 12px;
+      box-shadow: 4px 4px 0px #1e1e1e;
+      transition: all 0.15s ease-in-out;
+    }
+
+    .brutal-card:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 5px 5px 0px #1e1e1e;
+    }
+
+    .brutal-btn {
+      border: 2px solid #1e1e1e;
+      box-shadow: 2.5px 2.5px 0px #1e1e1e;
+      transition: all 0.1s ease-in-out;
+    }
+
+    .brutal-btn:hover:not(:disabled) {
+      transform: translate(-1px, -1px);
+      box-shadow: 3.5px 3.5px 0px #1e1e1e;
+    }
+
+    .brutal-btn:active:not(:disabled) {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0px #1e1e1e;
+    }
+
+    .brutal-input {
+      border: 2px solid #1e1e1e;
+      box-shadow: 2px 2px 0px #1e1e1e;
+    }
+
+    .brutal-input:focus {
+      outline: none;
+      box-shadow: 3.5px 3.5px 0px #ef4444;
+    }
+
+    /* Custom range input (slider) styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 8px;
+      border-radius: 4px;
+      outline: none;
+      border: 1.5px solid #1e1e1e;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2px solid #1e1e1e;
+      box-shadow: 1px 1px 0px #1e1e1e;
+      transition: transform 0.1s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+
+    input[type="range"]::-webkit-slider-thumb:active {
+      transform: scale(0.95);
+      background: #ef4444;
+    }
+
+    /* Custom Toast styles */
+    #toast-container {
+      position: fixed;
+      top: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+    }
+
+    .toast-box {
+      background-color: #ffffff;
+      border: 2px solid #1e1e1e;
+      box-shadow: 3px 3px 0px #1e1e1e;
+      animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(-20px) scale(0.9);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center items-start min-h-screen">
+
+  <!-- Floating Toast Notifications -->
+  <div id="toast-container" class="flex flex-col gap-2 max-w-sm w-full"></div>
+
+  <!-- Main Container -->
+  <main class="w-full max-w-2xl bg-white brutal-card p-6 md:p-8 mb-16">
+    
+    <!-- Header -->
+    <div class="border-b-4 border-ink pb-4 mb-6">
+      <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight text-ink flex items-center gap-2">
+        🧠 留意身體警告
+      </h3>
+      <ul class="list-disc pl-5 mt-3 text-sm md:text-base text-gray-700 font-bold space-y-1.5 leading-relaxed">
+        <li>當情緒起伏不定時，身體會出現變化</li>
+        <li>學會識別這些訊號是掌握身心健康的第一步</li>
+      </ul>
+    </div>
+
+    <!-- Section 1: Symptom Checklist -->
+    <section class="mb-8 bg-tint-red brutal-card p-4 md:p-5">
+      <h4 class="text-lg md:text-xl font-black text-ink mb-2">
+        警告訊號檢測：
+      </h4>
+      <p class="text-xs text-red-900/70 font-bold mb-4 leading-relaxed border-b border-red-900/10 pb-2.5">
+        💡 本工具僅供自我覺察，非專業醫療診斷。
+      </p>
+
+      <!-- Symptoms List Container -->
+      <div id="symptoms-list" class="space-y-3 max-h-[380px] overflow-y-auto pr-1">
+        <!-- Dynamically injected symptoms will go here -->
+      </div>
+
+      <!-- Add Custom Symptom -->
+      <div class="mt-4 flex gap-2 pt-2 border-t border-red-900/10">
+        <input 
+          type="text" 
+          id="custom-symptom-input"
+          placeholder="新增其他身體警告訊號..." 
+          class="flex-1 brutal-input p-2.5 rounded-lg text-sm bg-white text-ink focus:ring-1 focus:ring-accent-red font-semibold"
+        />
+        <button 
+          id="add-symptom-btn"
+          class="brutal-btn bg-ink text-white hover:bg-zinc-800 px-5 py-2.5 rounded-lg text-sm font-black whitespace-nowrap"
+        >
+          新增
+        </button>
+      </div>
+
+      <!-- Overall Status / Alert Level Meter -->
+      <div id="overall-status-box" class="mt-5 p-4 bg-white rounded-xl border-2 border-ink shadow-brutal-sm">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-ink font-black text-base md:text-lg">總體警告程度</span>
+          <span id="level-badge" class="font-black text-xs px-2.5 py-1 rounded-full border border-green-500 text-green-800 bg-green-100">
+            低
+          </span>
+        </div>
+        <div class="status-bar-container mb-3 flex h-4 w-full bg-zinc-100 border-2 border-ink rounded-lg overflow-hidden">
+          <div id="level-progress-bar" class="bg-gradient-to-r from-green-400 to-green-500 h-full rounded-l transition-all duration-500 ease-out" style="width: 0%"></div>
+        </div>
+        <div class="flex items-center">
+          <span id="alert-icon" class="text-lg mr-2">✅</span>
+          <p id="alert-text" class="text-sm font-extrabold text-green-800">目前身體狀況良好</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 2: Body Scan Practice -->
+    <section class="brutal-card p-5 bg-[#fffcf5] border-2 border-ink">
+      <h4 class="font-black text-ink mb-2 text-lg md:text-xl flex items-center gap-2">
+        🧘 練習：身體掃描 (3分鐘)
+      </h4>
+      <p class="text-gray-700 mb-4 text-sm md:text-base font-semibold leading-relaxed">
+        選擇引導聲音並開始 3 分鐘的身體掃描練習。
+      </p>
+
+      <!-- Voice Selector -->
+      <div class="mb-4 flex items-center space-x-6">
+        <label class="flex items-center cursor-pointer select-none font-bold text-ink">
+          <input type="radio" name="voice" value="male" checked class="mr-2.5 w-4 h-4 accent-yellow-500 cursor-pointer" />
+          <span class="text-sm">男聲 (粵語)</span>
+        </label>
+        <label class="flex items-center cursor-pointer select-none font-bold text-ink">
+          <input type="radio" name="voice" value="female" class="mr-2.5 w-4 h-4 accent-yellow-500 cursor-pointer" />
+          <span class="text-sm">女聲 (粵語)</span>
+        </label>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="flex space-x-3">
+        <button id="start-scan-btn" class="brutal-btn text-white text-sm px-5 py-2.5 font-black rounded-lg" style="background: #ef4444;">
+          開始身體掃描
+        </button>
+        <button id="stop-scan-btn" class="brutal-btn bg-zinc-500 hover:bg-zinc-600 text-white text-sm px-5 py-2.5 font-black rounded-lg hidden">
+          停止
+        </button>
+      </div>
+
+      <!-- Playback Status Details -->
+      <div id="playback-status-card" class="mt-4 p-4 bg-white rounded-xl border-2 border-ink shadow-brutal-sm hidden flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-ink font-black text-sm flex items-center gap-1.5">
+            正在播放身體掃描引導
+          </p>
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></div>
+            <span id="scan-timer" class="text-xs font-mono font-bold bg-zinc-100 px-2 py-1 border border-ink rounded">
+              00:00 / 03:00
+            </span>
+          </div>
+        </div>
+        <div class="w-full bg-zinc-100 rounded-full h-3.5 border-2 border-ink overflow-hidden">
+          <div id="scan-progress-bar" class="h-full transition-all duration-300" style="width: 0%; background: #ef4444;"></div>
+        </div>
+        <p class="text-xs text-gray-600 font-bold leading-relaxed">
+          💡 請放鬆身心，閉上眼睛，跟隨引導語音進行身體掃描練習。
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Developed by JC33 (Fixed to bottom-right corner) -->
+<div class="fixed bottom-4 right-4 z-50 text-xs font-mono text-ink">
+  Developed by JC33
+</div>
+
+  <!-- Sound Effects / Audio Logic -->
+  <script>
+    // Audio Resources
+    const AUDIO_URLS = {
+      male: 'https://pfst.cf2.poecdn.net/base/audio/e24d820a003fe9488a238419860395bea1304d937a06d7616ed6026a64e7699e',
+      female: 'https://pfst.cf2.poecdn.net/base/audio/27ccb0c23fc1e50873c312d3c3f27140fe888c6b0c9c4db96a69268a6c5ae98e'
+    };
+
+    // Initial Symptoms List
+    const DEFAULT_SYMPTOMS_LIST = [
+      { id: 'heartbeat', label: '心跳急促' },
+      { id: 'panic', label: '驚恐' },
+      { id: 'breathing', label: '呼吸不暢順' },
+      { id: 'drymouth', label: '口乾／口水分泌過多' },
+      { id: 'insomnia', label: '失眠' },
+      { id: 'flushing', label: '面紅耳熱' },
+      { id: 'tension', label: '肌肉繃緊' },
+      { id: 'headache', label: '頭痛' },
+      { id: 'dizziness', label: '頭暈' },
+      { id: 'backpain', label: '背痛' },
+      { id: 'neckpain', label: '頸梗膊痛' },
+      { id: 'sweating', label: '手心冒汗' },
+      { id: 'coldhands', label: '手腳冰凍' },
+      { id: 'stomach', label: '胃部不適' },
+      { id: 'appetite', label: '食慾不振' },
+      { id: 'concentration', label: '注意力不集中' }
+    ];
+
+    // Local State
+    let symptomList = JSON.parse(localStorage.getItem('ext_symptomList')) || DEFAULT_SYMPTOMS_LIST;
+    let symptoms = JSON.parse(localStorage.getItem('ext_symptoms')) || {};
+
+    // Populate missing symptoms with value 0
+    symptomList.forEach(s => {
+      if (symptoms[s.id] === undefined) {
+        symptoms[s.id] = 0;
+      }
+    });
+
+    let currentAudio = null;
+    let updateTimerInterval = null;
+
+    // Toast Utility
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast-box flex items-center justify-between gap-3 px-4 py-3 rounded-lg border-2 border-ink text-sm font-black text-ink shadow-brutal-sm`;
+      
+      const icon = type === 'success' ? '✅' : '❌';
+      toast.innerHTML = `
+        <span class="flex items-center gap-1.5">${icon} ${message}</span>
+        <button class="hover:text-red-500 font-bold transition-colors">✕</button>
+      `;
+
+      toast.querySelector('button').onclick = () => toast.remove();
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.animation = 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Save State Utility
+    function saveState() {
+      localStorage.setItem('ext_symptomList', JSON.stringify(symptomList));
+      localStorage.setItem('ext_symptoms', JSON.stringify(symptoms));
+    }
+
+    // Update Symptoms Grid
+    function renderSymptoms() {
+      const container = document.getElementById('symptoms-list');
+      container.innerHTML = '';
+
+      symptomList.forEach(s => {
+        const val = symptoms[s.id] || 0;
+        const intensity = val / 10;
+        
+        const colors = { 
+          0: '#E5E7EB', 1: '#FEF3C7', 2: '#FDE68A', 3: '#FBBF24', 4: '#F59E0B', 
+          5: '#FB923C', 6: '#F97316', 7: '#EA580C', 8: '#F87171', 9: '#EF4444', 10: '#DC2626' 
+        };
+
+        const colorVal = colors[val];
+        const backgroundGradient = val === 0 
+          ? '#E5E7EB' 
+          : `linear-gradient(to right, ${colorVal} 0%, ${colorVal} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
+
+        const isHigh = val >= 8;
+        const cardClass = `flex flex-col bg-white border-2 border-ink rounded-xl p-3 shadow-brutal-sm hover:scale-[1.01] transition-transform ${isHigh ? 'border-red-500 shadow-[2px_2px_0px_#ef4444]' : ''}`;
+
+        const div = document.createElement('div');
+        div.className = cardClass;
+        div.innerHTML = `
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-2">
+              <span class="text-ink font-bold text-sm md:text-base">${s.label}</span>
+              <button class="delete-btn text-red-500 hover:text-red-700 transition-colors p-1 bg-red-50 hover:bg-red-100 rounded border border-transparent hover:border-red-400" data-id="${s.id}" title="移除此訊號">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+            </div>
+            <span class="font-black text-lg ${val === 0 ? 'text-gray-400' : val <= 4 ? 'text-yellow-600' : val <= 7 ? 'text-orange-600' : 'text-red-600'}">${val}</span>
+          </div>
+          <input
+            type="range" 
+            min="0" 
+            max="10" 
+            value="${val}"
+            class="symptom-slider w-full h-2.5"
+            style="background: ${backgroundGradient}"
+            data-id="${s.id}"
+          />
+        `;
+
+        // Range input change listener
+        const slider = div.querySelector('input[type="range"]');
+        slider.oninput = (e) => {
+          const newVal = parseInt(e.target.value);
+          symptoms[s.id] = newVal;
+          saveState();
+          
+          // Fast local label/background refresh
+          const intensity = newVal / 10;
+          const colorVal = colors[newVal];
+          e.target.style.background = newVal === 0 
+            ? '#E5E7EB' 
+            : `linear-gradient(to right, ${colorVal} 0%, ${colorVal} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
+          
+          const labelSpan = div.querySelector('span:last-of-type');
+          labelSpan.textContent = newVal;
+          labelSpan.className = `font-black text-lg ${newVal === 0 ? 'text-gray-400' : newVal <= 4 ? 'text-yellow-600' : newVal <= 7 ? 'text-orange-600' : 'text-red-600'}`;
+          
+          if (newVal >= 8) {
+            div.classList.add('border-red-500', 'shadow-[2px_2px_0px_#ef4444]');
+          } else {
+            div.classList.remove('border-red-500', 'shadow-[2px_2px_0px_#ef4444]');
+          }
+
+          updateOverallAlert();
+        };
+
+        // Delete button listener
+        div.querySelector('.delete-btn').onclick = () => {
+          symptomList = symptomList.filter(item => item.id !== s.id);
+          delete symptoms[s.id];
+          saveState();
+          renderSymptoms();
+          updateOverallAlert();
+          showToast('已移除該身體訊號。', 'success');
+        };
+
+        container.appendChild(div);
+      });
+
+      lucide.createIcons();
+    }
+
+    // Update Overall Warning Progress Card
+    function updateOverallAlert() {
+      const totalLevel = symptomList.reduce((sum, s) => sum + (symptoms[s.id] || 0), 0);
+      const maxPossible = symptomList.length * 10;
+      const percentage = maxPossible > 0 ? (totalLevel / maxPossible) * 100 : 0;
+
+      let levelText = '低';
+      let levelClass = 'text-green-800 bg-green-100 border-green-500';
+      let barColor = 'bg-gradient-to-r from-green-400 to-green-500';
+      let messageText = '目前身體狀況良好';
+      let alertIcon = '✅';
+
+      if (percentage >= 80) {
+        levelText = '極高';
+        levelClass = 'text-red-900 bg-red-200 border-red-700';
+        barColor = 'bg-gradient-to-r from-red-600 to-red-700';
+        messageText = '身體警告訊號非常強烈，請尋求專業協助';
+        alertIcon = '🚨';
+      } else if (percentage >= 60) {
+        levelText = '高度';
+        levelClass = 'text-red-800 bg-red-100 border-red-500';
+        barColor = 'bg-gradient-to-r from-red-400 to-red-500';
+        messageText = '身體壓力較大，建議立即採取紓緩措施';
+        alertIcon = '⚠️';
+      } else if (percentage >= 40) {
+        levelText = '中度';
+        levelClass = 'text-orange-800 bg-orange-100 border-orange-500';
+        barColor = 'bg-gradient-to-r from-orange-400 to-orange-500';
+        messageText = '身體警告訊號明顯，建議進行放鬆練習';
+        alertIcon = '🧘';
+      } else if (percentage >= 20) {
+        levelText = '輕度';
+        levelClass = 'text-yellow-800 bg-yellow-100 border-yellow-500';
+        barColor = 'bg-gradient-to-r from-yellow-400 to-yellow-500';
+        messageText = '出現輕度警告訊號，請多加留意';
+        alertIcon = 'ℹ️';
+      }
+
+      // DOM Updates
+      document.getElementById('level-badge').textContent = levelText;
+      document.getElementById('level-badge').className = `font-black text-xs px-2.5 py-1 rounded-full border ${levelClass}`;
+      
+      const pBar = document.getElementById('level-progress-bar');
+      pBar.style.width = `${percentage}%`;
+      pBar.className = `${barColor} h-full rounded-l transition-all duration-500 ease-out`;
+
+      document.getElementById('alert-icon').textContent = alertIcon;
+      document.getElementById('alert-text').textContent = messageText;
+      document.getElementById('alert-text').className = `text-sm font-extrabold ${levelClass.split(' ')[0]}`;
+    }
+
+    // Add custom symptom Handler
+    function addCustomSymptom() {
+      const input = document.getElementById('custom-symptom-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const id = `custom_${Date.now()}`;
+      symptomList.push({ id, label: text });
+      symptoms[id] = 0;
+      saveState();
+      
+      input.value = '';
+      renderSymptoms();
+      updateOverallAlert();
+      showToast('已新增身體警告訊號！', 'success');
+    }
+
+    document.getElementById('add-symptom-btn').onclick = addCustomSymptom;
+    document.getElementById('custom-symptom-input').onkeydown = (e) => {
+      if (e.key === 'Enter') addCustomSymptom();
+    };
+
+    // Body Scan Playing Logic
+    const startScanBtn = document.getElementById('start-scan-btn');
+    const stopScanBtn = document.getElementById('stop-scan-btn');
+    const playbackCard = document.getElementById('playback-status-card');
+    const scanTimer = document.getElementById('scan-timer');
+    const scanProgressBar = document.getElementById('scan-progress-bar');
+
+    function formatTime(secs) {
+      const min = Math.floor(secs / 60).toString().padStart(2, '0');
+      const sec = Math.floor(secs % 60).toString().padStart(2, '0');
+      return `${min}:${sec}`;
+    }
+
+    function startScan() {
+      stopScan();
+
+      const selectedVoice = document.querySelector('input[name="voice"]:checked').value;
+      const url = AUDIO_URLS[selectedVoice];
+
+      currentAudio = new Audio(url);
+      currentAudio.play().then(() => {
+        playbackCard.classList.remove('hidden');
+        startScanBtn.classList.add('hidden');
+        stopScanBtn.classList.remove('hidden');
+        
+        updateTimerInterval = setInterval(() => {
+          if (currentAudio && currentAudio.duration) {
+            const current = currentAudio.currentTime;
+            const duration = currentAudio.duration;
+            const percent = (current / duration) * 100;
+            
+            scanProgressBar.style.width = `${percent}%`;
+            scanTimer.textContent = `${formatTime(current)} / ${formatTime(duration)}`;
+          }
+        }, 100);
+      }).catch(err => {
+        console.error(err);
+        showToast('語音播放失敗，請檢查網絡連接', 'error');
+        stopScan();
+      });
+
+      currentAudio.onended = () => {
+        showToast('身體掃描練習完成！希望您感到放鬆 🧘', 'success');
+        stopScan();
+      };
+
+      currentAudio.onerror = () => {
+        showToast('語音載入失敗，請稍後重試', 'error');
+        stopScan();
+      };
+    }
+
+    function stopScan() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        currentAudio.load();
+        currentAudio = null;
+      }
+      if (updateTimerInterval) {
+        clearInterval(updateTimerInterval);
+        updateTimerInterval = null;
+      }
+
+      playbackCard.classList.add('hidden');
+      startScanBtn.classList.remove('hidden');
+      stopScanBtn.classList.add('hidden');
+      
+      scanProgressBar.style.width = '0%';
+      scanTimer.textContent = '00:00 / 03:00';
+    }
+
+    startScanBtn.onclick = startScan;
+    stopScanBtn.onclick = stopScan;
+
+    // Initial load
+    renderSymptoms();
+    updateOverallAlert();
+  </script>
+</body>
+</html>
