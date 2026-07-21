@@ -1,1 +1,1 @@
-# Mood-Check
+Check your mood. Free to use. 
