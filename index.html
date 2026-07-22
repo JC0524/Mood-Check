@@ -151,6 +151,15 @@
 </head>
 <body class="p-3 sm:p-6 flex flex-col items-center justify-start min-h-screen">
 
+  <!-- Suppress Chrome Extension Error Loggers -->
+  <script>
+    window.addEventListener('unhandledrejection', function (event) {
+      if (event.reason && event.reason.stack && event.reason.stack.includes('chrome-extension://')) {
+        event.preventDefault();
+      }
+    });
+  </script>
+
   <!-- Floating Toast Notifications -->
   <div id="toast-container" class="flex flex-col gap-2 max-w-md mx-auto w-full"></div>
 
@@ -294,7 +303,7 @@
       localStorage.setItem('ext_symptoms', JSON.stringify(symptoms));
     }
 
-    // RGB Color Interpolation Helper for Smooth Gradients
+    // RGB Color Interpolation Helper
     function interpolateColor(color1, color2, factor) {
       const result = color1.slice();
       for (let i = 0; i < 3; i++) {
@@ -303,8 +312,7 @@
       return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
     }
 
-    // Calculate Dynamic Color along the 5-Stage Spectrum
-    // Green -> Yellow -> Orange -> Red -> Dark Red
+    // Dynamic 5-Stage Spectrum Calculation
     function getSpectrumColor(percentage) {
       const p = Math.max(0, Math.min(100, percentage));
       
@@ -326,7 +334,7 @@
       return 'rgb(136, 19, 55)';
     }
 
-    // Render Symptoms List
+    // Render Symptoms List with Fixed Flex & Layout Widths
     function renderSymptoms() {
       const container = document.getElementById('symptoms-list');
       container.innerHTML = '';
@@ -346,14 +354,14 @@
         const div = document.createElement('div');
         div.className = cardClass;
         div.innerHTML = `
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-sm sm:text-base">${s.label}</span>
-              <button class="delete-btn text-red-500 hover:text-red-700 transition-colors p-1.5 bg-red-50 hover:bg-red-100 rounded-lg border border-transparent hover:border-red-400 min-h-10 min-w-10 flex items-center justify-center" data-id="${s.id}" title="移除此訊號">
+          <div class="flex items-center justify-between mb-2 gap-2">
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              <span class="symptom-title font-bold text-sm sm:text-base truncate flex-1">${s.label}</span>
+              <button class="delete-btn text-red-500 hover:text-red-700 transition-colors p-1.5 bg-red-50 hover:bg-red-100 rounded-lg border border-transparent hover:border-red-400 min-h-10 min-w-10 flex-shrink-0 flex items-center justify-center" data-id="${s.id}" title="移除此訊號">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-            <span class="font-black text-base sm:text-lg" style="color: ${val === 0 ? '#9CA3AF' : colorVal}">${val}</span>
+            <span class="value-display font-black text-base sm:text-lg flex-shrink-0 w-8 text-right" style="color: ${val === 0 ? '#9CA3AF' : colorVal}">${val}</span>
           </div>
           <input
             type="range" 
@@ -367,6 +375,8 @@
         `;
 
         const slider = div.querySelector('input[type="range"]');
+        const valueDisplay = div.querySelector('.value-display');
+
         slider.oninput = (e) => {
           const newVal = parseInt(e.target.value);
           symptoms[s.id] = newVal;
@@ -379,9 +389,8 @@
             ? '#E5E7EB' 
             : `linear-gradient(to right, ${currentColor} 0%, ${currentColor} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
           
-          const labelSpan = div.querySelector('span:last-of-type');
-          labelSpan.textContent = newVal;
-          labelSpan.style.color = newVal === 0 ? '#9CA3AF' : currentColor;
+          valueDisplay.textContent = newVal;
+          valueDisplay.style.color = newVal === 0 ? '#9CA3AF' : currentColor;
           
           if (newVal >= 8) {
             div.classList.add('border-red-500');
@@ -409,7 +418,7 @@
       }
     }
 
-    // Update Overall Warning Status Meter (Continuous Smooth Spectrum)
+    // Update Overall Warning Status Meter
     function updateOverallAlert() {
       const totalLevel = symptomList.reduce((sum, s) => sum + (symptoms[s.id] || 0), 0);
       const maxPossible = symptomList.length * 10;
@@ -449,24 +458,21 @@
         badgeStyle = `color: #14532d; background-color: #dcfce7; border-color: #22c55e;`;
       }
 
-      // Update badge
       const badge = document.getElementById('level-badge');
       badge.textContent = levelText;
       badge.style.cssText = badgeStyle;
 
-      // Update progress bar width and continuous smooth gradient color
       const pBar = document.getElementById('level-progress-bar');
       pBar.style.width = `${percentage}%`;
       pBar.style.backgroundColor = currentColor;
 
-      // Update alert message & icon
       document.getElementById('alert-icon').textContent = alertIcon;
       const alertText = document.getElementById('alert-text');
       alertText.textContent = messageText;
       alertText.style.color = currentColor;
     }
 
-    // Add custom symptom action
+    // Add Custom Symptom Action
     function addCustomSymptom() {
       const input = document.getElementById('custom-symptom-input');
       const text = input.value.trim();
