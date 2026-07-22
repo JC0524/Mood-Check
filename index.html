@@ -168,9 +168,20 @@
     
     <!-- Header -->
     <div class="border-b-4 border-ink pb-4 mb-5">
-      <h3 class="text-xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
-        🧠 留意身體警告訊號
-      </h3>
+      <div class="flex items-start justify-between gap-2">
+        <h3 class="text-xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
+          🧠 留意身體警告訊號
+        </h3>
+        <!-- Compact Reset Emoji / Icon Button -->
+        <button 
+          id="reset-app-btn"
+          class="brutal-btn bg-red-100 hover:bg-red-200 text-red-800 rounded-lg p-2 flex items-center justify-center flex-shrink-0"
+          title="重置所有數據 / 清除紀錄"
+        >
+          <span class="text-lg leading-none">🔄</span>
+        </button>
+      </div>
+
       <ul class="list-disc pl-5 mt-2 text-xs sm:text-base text-gray-700 font-bold space-y-1 leading-relaxed">
         <li>當情緒起伏不定時，身體會出現變化</li>
         <li>學會識別這些訊號是掌握身心健康的第一步</li>
@@ -225,22 +236,11 @@
       </div>
     </section>
 
-    <!-- Reset App Data Section -->
-    <div class="mt-6 pt-4 border-t-2 border-ink flex flex-col items-center gap-2">
-      <button 
-        id="reset-app-btn"
-        class="w-full brutal-btn bg-red-100 hover:bg-red-200 text-red-900 font-black py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 border-2 border-ink min-h-12"
-      >
-        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-        重置所有數據 / 清除紀錄
-      </button>
-    </div>
-
   </main>
 
   <!-- Footer -->
   <footer class="text-center pb-8 text-xs font-mono text-gray-600">
-    
+    Developed by JC33
   </footer>
 
   <script>
@@ -334,7 +334,7 @@
       return 'rgb(136, 19, 55)';
     }
 
-    // Render Symptoms List with Fixed Flex & Layout Widths
+    // Render Symptoms List
     function renderSymptoms() {
       const container = document.getElementById('symptoms-list');
       container.innerHTML = '';
@@ -420,8 +420,11 @@
 
     // Update Overall Warning Status Meter
     function updateOverallAlert() {
-      const totalLevel = symptomList.reduce((sum, s) => sum + (symptoms[s.id] || 0), 0);
-      const maxPossible = symptomList.length * 10;
+      // Exclude zero-score domains completely from total maximum weight
+      const activeSymptoms = symptomList.filter(s => (symptoms[s.id] || 0) > 0);
+      const totalLevel = activeSymptoms.reduce((sum, s) => sum + symptoms[s.id], 0);
+      const maxPossible = activeSymptoms.length * 10;
+      
       const percentage = maxPossible > 0 ? (totalLevel / maxPossible) * 100 : 0;
 
       const currentColor = getSpectrumColor(percentage);
