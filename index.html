@@ -2,7 +2,7 @@
 <html lang="zh-HK" class="light">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>身體警告訊號檢測</title>
   
   <!-- Inter & JetBrains Mono Fonts -->
@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   
-  <!-- Standalone Tailwind CSS (CDN production build replacement) -->
+  <!-- Standalone Tailwind CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
   
   <!-- Lucide Icons CDN -->
@@ -20,15 +20,24 @@
     /* Custom Neo-Brutalist Theme Rules */
     :root {
       --color-ink: #1e1e1e;
-      --color-cream: #fffcf5;
       --color-tint-red: #fef2f2;
       --color-accent-red: #ef4444;
+    }
+
+    /* Mobile scroll & viewport optimizations */
+    html, body {
+      width: 100%;
+      min-height: 100%;
+      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     body {
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
       background-color: #faf8f5;
       color: var(--color-ink);
+      touch-action: manipulation;
     }
 
     .font-mono {
@@ -51,20 +60,11 @@
       transition: all 0.15s ease-in-out;
     }
 
-    .brutal-card:hover {
-      transform: translate(-1px, -1px);
-      box-shadow: 5px 5px 0px var(--color-ink);
-    }
-
     .brutal-btn {
       border: 2px solid var(--color-ink);
       box-shadow: 2.5px 2.5px 0px var(--color-ink);
       transition: all 0.1s ease-in-out;
-    }
-
-    .brutal-btn:hover:not(:disabled) {
-      transform: translate(-1px, -1px);
-      box-shadow: 3.5px 3.5px 0px var(--color-ink);
+      touch-action: manipulation;
     }
 
     .brutal-btn:active:not(:disabled) {
@@ -75,6 +75,7 @@
     .brutal-input {
       border: 2px solid var(--color-ink);
       box-shadow: 2px 2px 0px var(--color-ink);
+      font-size: 16px;
     }
 
     .brutal-input:focus {
@@ -82,46 +83,54 @@
       box-shadow: 3.5px 3.5px 0px var(--color-accent-red);
     }
 
-    /* Custom range input (slider) styling */
+    /* Mobile friendly custom range slider */
     input[type="range"] {
       -webkit-appearance: none;
       width: 100%;
-      height: 8px;
-      border-radius: 4px;
+      height: 12px;
+      border-radius: 6px;
       outline: none;
       border: 1.5px solid var(--color-ink);
       cursor: pointer;
+      touch-action: pan-y;
     }
 
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 18px;
-      height: 18px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: #ffffff;
-      border: 2px solid var(--color-ink);
-      box-shadow: 1px 1px 0px var(--color-ink);
-      transition: transform 0.1s;
+      border: 2.5px solid var(--color-ink);
+      box-shadow: 1.5px 1.5px 0px var(--color-ink);
     }
 
-    input[type="range"]::-webkit-slider-thumb:hover {
-      transform: scale(1.15);
+    input[type="range"]::-moz-range-thumb {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 2.5px solid var(--color-ink);
+      box-shadow: 1.5px 1.5px 0px var(--color-ink);
     }
 
-    input[type="range"]::-webkit-slider-thumb:active {
-      transform: scale(0.95);
-      background: var(--color-accent-red);
+    /* Smooth color transition on progress bar */
+    #level-progress-bar {
+      transition: width 0.4s ease-out, background-color 0.4s ease-out;
     }
 
     /* Custom Toast styles */
     #toast-container {
       position: fixed;
-      top: 1.5rem;
-      right: 1.5rem;
+      top: 1rem;
+      left: 1rem;
+      right: 1rem;
       z-index: 9999;
+      pointer-events: none;
     }
 
     .toast-box {
+      pointer-events: auto;
       background-color: #ffffff;
       border: 2px solid var(--color-ink);
       box-shadow: 3px 3px 0px var(--color-ink);
@@ -140,50 +149,50 @@
     }
   </style>
 </head>
-<body class="p-4 md:p-8 flex justify-center items-start min-h-screen">
+<body class="p-3 sm:p-6 flex flex-col items-center justify-start min-h-screen">
 
   <!-- Floating Toast Notifications -->
-  <div id="toast-container" class="flex flex-col gap-2 max-w-sm w-full"></div>
+  <div id="toast-container" class="flex flex-col gap-2 max-w-md mx-auto w-full"></div>
 
   <!-- Main Container -->
-  <main class="w-full max-w-2xl bg-white brutal-card p-6 md:p-8 mb-16">
+  <main class="w-full max-w-2xl bg-white brutal-card p-4 sm:p-8 mb-6">
     
     <!-- Header -->
-    <div class="border-b-4 border-ink pb-4 mb-6">
-      <h3 class="text-2xl md:text-3xl font-extrabold tracking-tight flex items-center gap-2">
+    <div class="border-b-4 border-ink pb-4 mb-5">
+      <h3 class="text-xl sm:text-3xl font-extrabold tracking-tight flex items-center gap-2">
         🧠 留意身體警告訊號
       </h3>
-      <ul class="list-disc pl-5 mt-3 text-sm md:text-base text-gray-700 font-bold space-y-1.5 leading-relaxed">
+      <ul class="list-disc pl-5 mt-2 text-xs sm:text-base text-gray-700 font-bold space-y-1 leading-relaxed">
         <li>當情緒起伏不定時，身體會出現變化</li>
         <li>學會識別這些訊號是掌握身心健康的第一步</li>
       </ul>
     </div>
 
     <!-- Section 1: Symptom Checklist -->
-    <section class="bg-tint-red brutal-card p-4 md:p-5">
-      <h4 class="text-lg md:text-xl font-black mb-2">
+    <section class="bg-tint-red brutal-card p-3 sm:p-5">
+      <h4 class="text-base sm:text-xl font-black mb-1">
         警告訊號檢測：
       </h4>
-      <p class="text-xs text-red-900 font-bold mb-4 leading-relaxed border-b border-red-200 pb-2.5">
+      <p class="text-xs text-red-900 font-bold mb-3 border-b border-red-200 pb-2">
         💡 本工具僅供自我覺察，非專業醫療診斷。
       </p>
 
       <!-- Symptoms List Container -->
-      <div id="symptoms-list" class="space-y-3 max-h-96 overflow-y-auto pr-1">
+      <div id="symptoms-list" class="space-y-3">
         <!-- Dynamically injected symptoms will go here -->
       </div>
 
       <!-- Add Custom Symptom -->
-      <div class="mt-4 flex gap-2 pt-2 border-t border-red-200">
+      <div class="mt-4 flex flex-col sm:flex-row gap-2 pt-3 border-t border-red-200">
         <input 
           type="text" 
           id="custom-symptom-input"
           placeholder="新增其他身體警告訊號..." 
-          class="flex-1 brutal-input p-2.5 rounded-lg text-sm bg-white font-semibold"
+          class="w-full flex-1 brutal-input p-3 rounded-lg text-sm bg-white font-semibold"
         />
         <button 
           id="add-symptom-btn"
-          class="brutal-btn bg-gray-900 text-white hover:bg-gray-800 px-5 py-2.5 rounded-lg text-sm font-black whitespace-nowrap"
+          class="w-full sm:w-auto brutal-btn bg-gray-900 text-white hover:bg-gray-800 px-5 py-3 rounded-lg text-sm font-black whitespace-nowrap min-h-12"
         >
           新增
         </button>
@@ -191,36 +200,47 @@
 
       <!-- Overall Status / Alert Level Meter -->
       <div id="overall-status-box" class="mt-5 p-4 bg-white rounded-xl border-2 border-ink">
-        <div class="flex items-center justify-between mb-2.5">
-          <span class="font-black text-base md:text-lg">總體警告程度</span>
-          <span id="level-badge" class="font-black text-xs px-2.5 py-1 rounded-full border border-green-500 text-green-800 bg-green-100">
-            低
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-black text-sm sm:text-lg">總體警告程度</span>
+          <span id="level-badge" class="font-black text-xs px-3 py-1 rounded-full border transition-colors duration-300">
+            輕微
           </span>
         </div>
         <div class="status-bar-container mb-3 flex h-4 w-full bg-gray-100 border-2 border-ink rounded-lg overflow-hidden">
-          <div id="level-progress-bar" class="bg-green-500 h-full rounded-l transition-all duration-500 ease-out" style="width: 0%"></div>
+          <div id="level-progress-bar" class="h-full" style="width: 0%; background-color: #22c55e;"></div>
         </div>
         <div class="flex items-center">
           <span id="alert-icon" class="text-lg mr-2">✅</span>
-          <p id="alert-text" class="text-sm font-extrabold text-green-800">目前身體狀況良好</p>
+          <p id="alert-text" class="text-xs sm:text-sm font-extrabold transition-colors duration-300">目前身體狀況良好</p>
         </div>
       </div>
     </section>
 
+    <!-- Reset App Data Section -->
+    <div class="mt-6 pt-4 border-t-2 border-ink flex flex-col items-center gap-2">
+      <button 
+        id="reset-app-btn"
+        class="w-full brutal-btn bg-red-100 hover:bg-red-200 text-red-900 font-black py-3 px-4 rounded-xl text-sm flex items-center justify-center gap-2 border-2 border-ink min-h-12"
+      >
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        重置所有數據 / 清除紀錄
+      </button>
+    </div>
+
   </main>
 
-  <!-- Developed by JC33 (Fixed to bottom-right corner) -->
-  <div class="fixed bottom-4 right-4 z-50 text-xs font-mono">
+  <!-- Footer -->
+  <footer class="text-center pb-8 text-xs font-mono text-gray-600">
     Developed by JC33
-  </div>
+  </footer>
 
   <script>
-    // Initial Symptoms List
+    // Initial Default Symptoms List
     const DEFAULT_SYMPTOMS_LIST = [
       { id: 'heartbeat', label: '心跳急促' },
       { id: 'panic', label: '驚恐' },
       { id: 'breathing', label: '呼吸不暢順' },
-      { id: 'drymouth', label: '口乾／口水分泌過多' },
+      { id: 'drymouth', label: '口乾／口水分沫過多' },
       { id: 'insomnia', label: '失眠' },
       { id: 'flushing', label: '面紅耳熱' },
       { id: 'tension', label: '肌肉繃緊' },
@@ -235,11 +255,10 @@
       { id: 'concentration', label: '注意力不集中' }
     ];
 
-    // Local State
-    let symptomList = JSON.parse(localStorage.getItem('ext_symptomList')) || DEFAULT_SYMPTOMS_LIST;
+    // App State Management
+    let symptomList = JSON.parse(localStorage.getItem('ext_symptomList')) || [...DEFAULT_SYMPTOMS_LIST];
     let symptoms = JSON.parse(localStorage.getItem('ext_symptoms')) || {};
 
-    // Populate missing symptoms with value 0
     symptomList.forEach(s => {
       if (symptoms[s.id] === undefined) {
         symptoms[s.id] = 0;
@@ -250,21 +269,23 @@
     function showToast(message, type = 'success') {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
-      toast.className = `toast-box flex items-center justify-between gap-3 px-4 py-3 rounded-lg border-2 border-ink text-sm font-black text-gray-900`;
+      toast.className = `toast-box flex items-center justify-between gap-3 px-4 py-3 rounded-lg border-2 border-ink text-xs sm:text-sm font-black text-gray-900`;
       
-      const icon = type === 'success' ? '✅' : '❌';
+      const icon = type === 'success' ? '✅' : 'ℹ️';
       toast.innerHTML = `
-        <span class="flex items-center gap-1.5">${icon} ${message}</span>
-        <button class="hover:text-red-500 font-bold transition-colors">✕</button>
+        <span class="flex items-center gap-2">${icon} ${message}</span>
+        <button class="hover:text-red-500 font-bold transition-colors p-1">✕</button>
       `;
 
       toast.querySelector('button').onclick = () => toast.remove();
       container.appendChild(toast);
 
       setTimeout(() => {
-        toast.style.animation = 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
-        setTimeout(() => toast.remove(), 300);
-      }, 3500);
+        if (toast.parentNode) {
+          toast.style.animation = 'slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) reverse forwards';
+          setTimeout(() => toast.remove(), 300);
+        }
+      }, 3000);
     }
 
     // Save State Utility
@@ -273,7 +294,39 @@
       localStorage.setItem('ext_symptoms', JSON.stringify(symptoms));
     }
 
-    // Update Symptoms Grid
+    // RGB Color Interpolation Helper for Smooth Gradients
+    function interpolateColor(color1, color2, factor) {
+      const result = color1.slice();
+      for (let i = 0; i < 3; i++) {
+        result[i] = Math.round(result[i] + factor * (color2[i] - result[i]));
+      }
+      return `rgb(${result[0]}, ${result[1]}, ${result[2]})`;
+    }
+
+    // Calculate Dynamic Color along the 5-Stage Spectrum
+    // Green -> Yellow -> Orange -> Red -> Dark Red
+    function getSpectrumColor(percentage) {
+      const p = Math.max(0, Math.min(100, percentage));
+      
+      const palette = [
+        { pct: 0,   rgb: [34, 197, 94] },   // Green (#22c55e)
+        { pct: 25,  rgb: [234, 179, 8] },   // Yellow (#eab308)
+        { pct: 50,  rgb: [249, 115, 22] },  // Orange (#f97316)
+        { pct: 75,  rgb: [239, 68, 68] },   // Red (#ef4444)
+        { pct: 100, rgb: [136, 19, 55] }    // Dark Red (#881337)
+      ];
+
+      for (let i = 0; i < palette.length - 1; i++) {
+        if (p <= palette[i + 1].pct) {
+          const range = palette[i + 1].pct - palette[i].pct;
+          const factor = (p - palette[i].pct) / range;
+          return interpolateColor(palette[i].rgb, palette[i + 1].rgb, factor);
+        }
+      }
+      return 'rgb(136, 19, 55)';
+    }
+
+    // Render Symptoms List
     function renderSymptoms() {
       const container = document.getElementById('symptoms-list');
       container.innerHTML = '';
@@ -281,60 +334,54 @@
       symptomList.forEach(s => {
         const val = symptoms[s.id] || 0;
         const intensity = val / 10;
-        
-        const colors = { 
-          0: '#E5E7EB', 1: '#FEF3C7', 2: '#FDE68A', 3: '#FBBF24', 4: '#F59E0B', 
-          5: '#FB923C', 6: '#F97316', 7: '#EA580C', 8: '#F87171', 9: '#EF4444', 10: '#DC2626' 
-        };
+        const colorVal = getSpectrumColor(val * 10);
 
-        const colorVal = colors[val];
         const backgroundGradient = val === 0 
           ? '#E5E7EB' 
           : `linear-gradient(to right, ${colorVal} 0%, ${colorVal} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
 
         const isHigh = val >= 8;
-        const cardClass = `flex flex-col bg-white border-2 border-ink rounded-xl p-3 hover:scale-100 transition-transform ${isHigh ? 'border-red-500' : ''}`;
+        const cardClass = `flex flex-col bg-white border-2 border-ink rounded-xl p-3.5 ${isHigh ? 'border-red-500' : ''}`;
 
         const div = document.createElement('div');
         div.className = cardClass;
         div.innerHTML = `
-          <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <span class="font-bold text-sm md:text-base">${s.label}</span>
-              <button class="delete-btn text-red-500 hover:text-red-700 transition-colors p-1 bg-red-50 hover:bg-red-100 rounded border border-transparent hover:border-red-400" data-id="${s.id}" title="移除此訊號">
+              <span class="font-bold text-sm sm:text-base">${s.label}</span>
+              <button class="delete-btn text-red-500 hover:text-red-700 transition-colors p-1.5 bg-red-50 hover:bg-red-100 rounded-lg border border-transparent hover:border-red-400 min-h-10 min-w-10 flex items-center justify-center" data-id="${s.id}" title="移除此訊號">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
-            <span class="font-black text-lg ${val === 0 ? 'text-gray-400' : val <= 4 ? 'text-yellow-600' : val <= 7 ? 'text-orange-600' : 'text-red-600'}">${val}</span>
+            <span class="font-black text-base sm:text-lg" style="color: ${val === 0 ? '#9CA3AF' : colorVal}">${val}</span>
           </div>
           <input
             type="range" 
             min="0" 
             max="10" 
             value="${val}"
-            class="symptom-slider w-full h-2.5"
+            class="symptom-slider w-full"
             style="background: ${backgroundGradient}"
             data-id="${s.id}"
           />
         `;
 
-        // Range input change listener
         const slider = div.querySelector('input[type="range"]');
         slider.oninput = (e) => {
           const newVal = parseInt(e.target.value);
           symptoms[s.id] = newVal;
           saveState();
           
-          // Fast local label/background refresh
           const intensity = newVal / 10;
-          const colorVal = colors[newVal];
+          const currentColor = getSpectrumColor(newVal * 10);
+          
           e.target.style.background = newVal === 0 
             ? '#E5E7EB' 
-            : `linear-gradient(to right, ${colorVal} 0%, ${colorVal} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
+            : `linear-gradient(to right, ${currentColor} 0%, ${currentColor} ${intensity * 100}%, #E5E7EB ${intensity * 100}%, #E5E7EB 100%)`;
           
           const labelSpan = div.querySelector('span:last-of-type');
           labelSpan.textContent = newVal;
-          labelSpan.className = `font-black text-lg ${newVal === 0 ? 'text-gray-400' : newVal <= 4 ? 'text-yellow-600' : newVal <= 7 ? 'text-orange-600' : 'text-red-600'}`;
+          labelSpan.style.color = newVal === 0 ? '#9CA3AF' : currentColor;
           
           if (newVal >= 8) {
             div.classList.add('border-red-500');
@@ -345,7 +392,6 @@
           updateOverallAlert();
         };
 
-        // Delete button listener
         div.querySelector('.delete-btn').onclick = () => {
           symptomList = symptomList.filter(item => item.id !== s.id);
           delete symptoms[s.id];
@@ -363,60 +409,64 @@
       }
     }
 
-    // Update Overall Warning Progress Card
+    // Update Overall Warning Status Meter (Continuous Smooth Spectrum)
     function updateOverallAlert() {
       const totalLevel = symptomList.reduce((sum, s) => sum + (symptoms[s.id] || 0), 0);
       const maxPossible = symptomList.length * 10;
       const percentage = maxPossible > 0 ? (totalLevel / maxPossible) * 100 : 0;
 
-      let levelText = '低';
-      let levelClass = 'text-green-800 bg-green-100 border-green-500';
-      let barColor = 'bg-green-500';
+      const currentColor = getSpectrumColor(percentage);
+
+      let levelText = '輕微';
       let messageText = '目前身體狀況良好';
       let alertIcon = '✅';
+      let badgeStyle = '';
 
       if (percentage >= 80) {
         levelText = '極高';
-        levelClass = 'text-red-900 bg-red-200 border-red-700';
-        barColor = 'bg-red-700';
         messageText = '身體警告訊號非常強烈，請尋求專業協助';
         alertIcon = '🚨';
+        badgeStyle = `color: #ffffff; background-color: #881337; border-color: #4c0519;`;
       } else if (percentage >= 60) {
         levelText = '高度';
-        levelClass = 'text-red-800 bg-red-100 border-red-500';
-        barColor = 'bg-red-500';
         messageText = '身體壓力較大，建議立即採取紓緩措施';
         alertIcon = '⚠️';
+        badgeStyle = `color: #7f1d1d; background-color: #fee2e2; border-color: #ef4444;`;
       } else if (percentage >= 40) {
         levelText = '中度';
-        levelClass = 'text-orange-800 bg-orange-100 border-orange-500';
-        barColor = 'bg-orange-500';
         messageText = '身體警告訊號明顯，建議進行放鬆練習';
         alertIcon = '🧘';
+        badgeStyle = `color: #7c2d12; background-color: #ffedd5; border-color: #f97316;`;
       } else if (percentage >= 20) {
-        levelText = '輕度';
-        levelClass = 'text-yellow-800 bg-yellow-100 border-yellow-500';
-        barColor = 'bg-yellow-500';
-        messageText = '出現輕度警告訊號，請多加留意';
+        levelText = '注意';
+        messageText = '出現輕微警告訊號，請多加留意';
         alertIcon = 'ℹ️';
+        badgeStyle = `color: #713f12; background-color: #fef9c3; border-color: #eab308;`;
+      } else {
+        levelText = '輕微';
+        messageText = '目前身體狀況良好';
+        alertIcon = '✅';
+        badgeStyle = `color: #14532d; background-color: #dcfce7; border-color: #22c55e;`;
       }
 
-      // DOM Updates
+      // Update badge
       const badge = document.getElementById('level-badge');
       badge.textContent = levelText;
-      badge.className = `font-black text-xs px-2.5 py-1 rounded-full border ${levelClass}`;
-      
+      badge.style.cssText = badgeStyle;
+
+      // Update progress bar width and continuous smooth gradient color
       const pBar = document.getElementById('level-progress-bar');
       pBar.style.width = `${percentage}%`;
-      pBar.className = `${barColor} h-full rounded-l transition-all duration-500 ease-out`;
+      pBar.style.backgroundColor = currentColor;
 
+      // Update alert message & icon
       document.getElementById('alert-icon').textContent = alertIcon;
       const alertText = document.getElementById('alert-text');
       alertText.textContent = messageText;
-      alertText.className = `text-sm font-extrabold ${levelClass.split(' ')[0]}`;
+      alertText.style.color = currentColor;
     }
 
-    // Add custom symptom Handler
+    // Add custom symptom action
     function addCustomSymptom() {
       const input = document.getElementById('custom-symptom-input');
       const text = input.value.trim();
@@ -433,10 +483,29 @@
       showToast('已新增身體警告訊號！', 'success');
     }
 
+    // Reset App Local Data Action
+    function resetApp() {
+      if (confirm('確定要重置所有紀錄並恢復預設設定嗎？')) {
+        localStorage.removeItem('ext_symptomList');
+        localStorage.removeItem('ext_symptoms');
+        
+        symptomList = [...DEFAULT_SYMPTOMS_LIST];
+        symptoms = {};
+        symptomList.forEach(s => { symptoms[s.id] = 0; });
+        
+        saveState();
+        renderSymptoms();
+        updateOverallAlert();
+        showToast('已完成重置，回復預設值。', 'success');
+      }
+    }
+
+    // Event Bindings
     document.getElementById('add-symptom-btn').onclick = addCustomSymptom;
     document.getElementById('custom-symptom-input').onkeydown = (e) => {
       if (e.key === 'Enter') addCustomSymptom();
     };
+    document.getElementById('reset-app-btn').onclick = resetApp;
 
     // Initial load
     renderSymptoms();
